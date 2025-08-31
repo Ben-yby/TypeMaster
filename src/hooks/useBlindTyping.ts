@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { BlindTypingState, EditorStats } from '../types/editor';
+import { BlindTypingState } from '../types/editor';
 
 interface UseBlindTypingOptions {
   originalContent: string;
@@ -7,7 +7,6 @@ interface UseBlindTypingOptions {
 
 interface UseBlindTypingReturn {
   state: BlindTypingState;
-  stats: EditorStats;
   handleInput: (inputLength: number) => void;
   handleDelete: (deletedLength: number) => void;
   reset: () => void;
@@ -96,15 +95,8 @@ export const useBlindTyping = ({ originalContent }: UseBlindTypingOptions): UseB
     }));
   }, [originalContent]);
 
-  const stats: EditorStats = {
-    charCount: state.inputCount,
-    wordCount: 0, // 不需要词数统计
-    lineCount: state.displayContent.split('\n').length,
-  };
-
   return {
     state,
-    stats,
     handleInput,
     handleDelete,
     reset,

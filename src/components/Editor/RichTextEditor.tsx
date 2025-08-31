@@ -21,7 +21,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   
   // 只有在有原始内容时才使用盲打模式
   const hasOriginalContent = Boolean(originalContent);
-  const { state, stats, handleInput, handleDelete, setContent } = useBlindTyping({
+  const { state, handleInput, handleDelete, setContent } = useBlindTyping({
     originalContent: hasOriginalContent ? originalContent : '',
   });
 
@@ -35,7 +35,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (hasOriginalContent) {
       onContentChange?.(state.displayContent);
     } else {
-      onContentChange?.(normalContent);
+      // 在普通模式下，传递编辑器的HTML内容
+      if (editorRef.current) {
+        onContentChange?.(editorRef.current.innerHTML || '');
+      } else {
+        onContentChange?.(normalContent);
+      }
     }
   }, [state.displayContent, normalContent, onContentChange, hasOriginalContent]);
 
@@ -82,28 +87,37 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const content = target.textContent || '';
     
     if (hasOriginalContent) {
-      // 盲打模式：使用盲打逻辑
-      handleInput(content.length);
+      // 盲打模式：基于当前显示内容计算新的输入长度
+      const currentDisplayLength = state.displayContent.length;
+      const inputDiff = content.length - currentDisplayLength;
+      const newInputLength = Math.max(0, state.inputCount + inputDiff);
+      
+      handleInput(newInputLength);
     } else {
-      // 普通模式：直接更新内容
+      // 普通模式：直接更新内容并触发回调
       setNormalContent(content);
+      onContentChange?.(target.innerHTML || '');
     }
-  }, [handleInput, isComposing, hasOriginalContent]);
+  }, [handleInput, isComposing, hasOriginalContent, onContentChange, state.displayContent.length, state.inputCount]);
 
   // 处理按键事件
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (isComposing) return;
 
     if (hasOriginalContent && (e.key === 'Backspace' || e.key === 'Delete')) {
-      // 盲打模式：使用盲打删除逻辑
-      const target = e.currentTarget;
+      // 盲打模式：基于当前状态计算删除后的输入长度
       setTimeout(() => {
+        const target = e.currentTarget;
         const newContent = target.textContent || '';
-        handleDelete(newContent.length);
+        const currentDisplayLength = state.displayContent.length;
+        const inputDiff = newContent.length - currentDisplayLength;
+        const newInputLength = Math.max(0, state.inputCount + inputDiff);
+        
+        handleDelete(newInputLength);
       }, 0);
     }
     // 普通模式：让浏览器处理正常的编辑操作
-  }, [handleDelete, isComposing, hasOriginalContent]);
+  }, [handleDelete, isComposing, hasOriginalContent, state.displayContent.length, state.inputCount]);
 
   const handleCompositionStart = useCallback(() => {
     setIsComposing(true);
@@ -115,11 +129,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const content = target.textContent || '';
     
     if (hasOriginalContent) {
-      handleInput(content.length);
+      // 盲打模式：基于当前显示内容计算新的输入长度
+      const currentDisplayLength = state.displayContent.length;
+      const inputDiff = content.length - currentDisplayLength;
+      const newInputLength = Math.max(0, state.inputCount + inputDiff);
+      
+      handleInput(newInputLength);
     } else {
       setNormalContent(content);
+      onContentChange?.(target.innerHTML || '');
     }
-  }, [handleInput, hasOriginalContent]);
+  }, [handleInput, hasOriginalContent, onContentChange, state.displayContent.length, state.inputCount]);
 
   const hasBlindContent = Boolean(hasOriginalContent && state.displayContent);
   const showPlaceholder = !hasOriginalContent && !normalContent;

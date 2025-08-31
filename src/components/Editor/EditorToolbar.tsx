@@ -9,10 +9,8 @@ import {
   ListIcon,
   FileIcon
 } from '../UI/Icons';
-import { EditorStats } from '../../types/editor';
 
 interface EditorToolbarProps {
-  stats: EditorStats;
   currentFileName?: string;
   onImportClick: () => void;
   onFormatClick?: (format: string) => void;
@@ -21,7 +19,6 @@ interface EditorToolbarProps {
 }
 
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
-  stats,
   currentFileName,
   onImportClick,
   onFormatClick,
@@ -98,14 +95,6 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         </div>
         
         <div className="flex items-center space-x-4 text-sm text-gray-500">
-          <div className="flex items-center space-x-2">
-            <span>字数: <span className="font-medium">{stats.charCount}</span></span>
-            <span className="hidden sm:inline">|</span>
-            <span className="hidden sm:inline">
-              行数: <span className="font-medium">{stats.lineCount}</span>
-            </span>
-          </div>
-          
           {onClear && (
             <Button
               variant="ghost"

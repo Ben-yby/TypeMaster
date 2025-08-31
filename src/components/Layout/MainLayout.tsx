@@ -10,14 +10,7 @@ export const MainLayout: React.FC = () => {
   const [showImporter, setShowImporter] = useState(false);
   const [displayContent, setDisplayContent] = useState('');
 
-  const { stats: blindStats, reset } = useBlindTyping({ originalContent });
-
-  // 计算实际统计信息
-  const actualStats = originalContent ? blindStats : {
-    charCount: displayContent.length,
-    wordCount: 0,
-    lineCount: displayContent ? displayContent.split('\n').length : 1,
-  };
+  const { reset } = useBlindTyping({ originalContent });
 
   const handleFileImported = (content: string, filename: string) => {
     setOriginalContent(content);
@@ -64,7 +57,6 @@ export const MainLayout: React.FC = () => {
       ) : (
         <div className="flex-1 flex flex-col bg-white w-full">
           <EditorToolbar
-            stats={actualStats}
             currentFileName={currentFileName}
             onImportClick={handleImportClick}
             onClear={originalContent ? handleClear : undefined}
